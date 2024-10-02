@@ -92,8 +92,31 @@ function movePlayer(event) {
     player.style.top = top + 'px';
     player.style.left = left + 'px';
 
+    // Check for wall collision
+    checkWallCollision();
+
     // Check if player reaches the finish point
     checkWinCondition();
+}
+
+// Check if player hits a wall
+function checkWallCollision() {
+    let playerRect = player.getBoundingClientRect();
+
+    for (let wall of walls) {
+        let wallRect = wall.getBoundingClientRect();
+
+        if (playerRect.left < wallRect.right &&
+            playerRect.right > wallRect.left &&
+            playerRect.top < wallRect.bottom &&
+            playerRect.bottom > wallRect.top) {
+            // End the game if player hits a wall
+            gameOver = true;
+            status.textContent = "Game Over! You hit a wall!";
+            clearInterval(gameTimer);
+            break;
+        }
+    }
 }
 
 // Check if player reaches the finish point
@@ -101,11 +124,10 @@ function checkWinCondition() {
     let playerRect = player.getBoundingClientRect();
     let finishRect = finish.getBoundingClientRect();
 
-    // Check if the player has reached the finish point only if the player has moved
     if (playerRect.top < finishRect.bottom && playerRect.bottom > finishRect.top &&
         playerRect.left < finishRect.right && playerRect.right > finishRect.left) {
         gameOver = true;
-        status.textContent = "Maze Game";
+        status.textContent = "Congratulations! You won!";
         clearInterval(gameTimer);
     }
 }
