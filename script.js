@@ -2,10 +2,20 @@ let player = document.getElementById('player');
 let finish = document.getElementById('finish');
 let status = document.getElementById('status');
 let maze = document.getElementById('maze');
+let nameInputModal = document.getElementById('nameInputModal');
+let playerNameDisplay = document.getElementById('playerName');
+let playerNameInput = document.getElementById('playerNameInput');
+let startGameBtn = document.getElementById('startGameBtn');
+let toggleButton = document.getElementById('toggleMode');
+let timerDisplay = document.getElementById('timer');
+let playCountDisplay = document.getElementById('playCount');
 let mazeWidth = maze.offsetWidth;
 let mazeHeight = maze.offsetHeight;
 let walls = [];
 let gameOver = false;
+let gameTimer;
+let seconds = 0;
+let playCount = 0;
 
 // Random color generator
 function randomColor() {
@@ -17,20 +27,45 @@ function randomColor() {
     return color;
 }
 
-// Create random walls
+// Set player (start ball) and finish ball positions
+function setStartAndFinishPositions() {
+    player.style.top = '0px'; // Top-left corner for start
+    player.style.left = '0px';
+    finish.style.top = `${mazeHeight - finish.offsetHeight}px`; // Bottom-right corner for finish
+    finish.style.left = `${mazeWidth - finish.offsetWidth}px`;
+}
+
+// Create random walls, ensuring they stay within the maze bounds
 function createRandomWalls(numWalls) {
+    walls.forEach(wall => wall.remove()); // Remove any existing walls
+    walls = []; // Clear the walls array
+
     for (let i = 0; i < numWalls; i++) {
         let wall = document.createElement('div');
         wall.className = 'wall';
-        wall.style.width = `${Math.floor(Math.random() * 100) + 50}px`;
-        wall.style.height = `${Math.floor(Math.random() * 20) + 10}px`;
-        wall.style.top = `${Math.floor(Math.random() * (mazeHeight - 30))}px`;
-        wall.style.left = `${Math.floor(Math.random() * (mazeWidth - 30))}px`;
+        wall.style.width = `${Math.floor(Math.random() * 80) + 50}px`; // Constrain wall width
+        wall.style.height = `${Math.floor(Math.random() * 20) + 10}px`; // Constrain wall height
+        
+        // Ensure the walls are within the maze boundaries
+        wall.style.top = `${Math.floor(Math.random() * (mazeHeight - 50))}px`; 
+        wall.style.left = `${Math.floor(Math.random() * (mazeWidth - 50))}px`;
         wall.style.backgroundColor = randomColor(); // Random wall color
+        
         maze.appendChild(wall);
         walls.push(wall);
     }
 }
+
+// Light/Dark mode toggle
+toggleButton.addEventListener('click', function() {
+    document.body.classList.toggle('light-mode');
+    
+    if (document.body.classList.contains('light-mode')) {
+        toggleButton.textContent = 'Switch to Dark Mode';
+    } else {
+        toggleButton.textContent = 'Switch to Light Mode';
+    }
+});
 
 // Player movement
 window.addEventListener('keydown', movePlayer);
@@ -57,44 +92,51 @@ function movePlayer(event) {
     player.style.top = top + 'px';
     player.style.left = left + 'px';
 
-    // Check collision with walls
-    walls.forEach(wall => {
-        if (isCollision(player, wall)) {
-            status.textContent = "You hit a wall! Game over!";
-            status.style.color = "#e74c3c";
-            gameOver = true;
-        }
-    });
+    // Check if player reaches the finish point
+    checkWinCondition();
+}
 
-    // Check if reached finish point
-    if (isCollision(player, finish)) {
-        status.textContent = "Congratulations! You reached the finish!";
-        status.style.color = "#2ecc71";
+// Check if player reaches the finish point
+function checkWinCondition() {
+    let playerRect = player.getBoundingClientRect();
+    let finishRect = finish.getBoundingClientRect();
+
+    // Check if the player has reached the finish point only if the player has moved
+    if (playerRect.top < finishRect.bottom && playerRect.bottom > finishRect.top &&
+        playerRect.left < finishRect.right && playerRect.right > finishRect.left) {
         gameOver = true;
+        status.textContent = "Maze Game";
+        clearInterval(gameTimer);
     }
 }
 
-// Function to check collision
-function isCollision(player, obstacle) {
-    let playerRect = player.getBoundingClientRect();
-    let obstacleRect = obstacle.getBoundingClientRect();
-
-    return !(
-        playerRect.bottom < obstacleRect.top ||
-        playerRect.top > obstacleRect.bottom ||
-        playerRect.right < obstacleRect.left ||
-        playerRect.left > obstacleRect.right
-    );
+// Timer function
+function startTimer() {
+    seconds = 0;
+    timerDisplay.textContent = `${seconds}s`;
+    gameTimer = setInterval(function() {
+        seconds++;
+        timerDisplay.textContent = `${seconds}s`;
+    }, 1000);
 }
 
-// Initialize the game
-function initializeGame() {
-    // Randomize finish position
-    finish.style.top = `${Math.floor(Math.random() * (mazeHeight - finish.offsetHeight))}px`;
-    finish.style.left = `${Math.floor(Math.random() * (mazeWidth - finish.offsetWidth))}px`;
+// Start Game Button Click Event
+startGameBtn.addEventListener('click', function() {
+    let playerName = playerNameInput.value;
+    if (playerName.trim() === "") {
+        alert("Please enter a name to start the game.");
+        return;
+    }
 
-    // Create random walls
-    createRandomWalls(10);
-}
+    playerNameDisplay.textContent = playerName;
+    nameInputModal.style.display = 'none'; // Hide the name input modal
+    setStartAndFinishPositions();
+    createRandomWalls(15); // Increase the number of walls
+    startTimer();
+    gameOver = false; // Reset game over state
+});
 
-initializeGame();
+// Open modal when the game loads
+window.onload = function() {
+    nameInputModal.style.display = 'flex';
+};
