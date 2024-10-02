@@ -8,12 +8,28 @@
 </head>
 <body>
     <h1 class="title">Maze Adventure</h1>
+
+    <button id="toggleMode">Toggle Dark/Light Mode</button>
+    <p>Player: <span id="playerName"></span></p>
+    <p>Time: <span id="timer">0s</span></p>
+    <p>Times Played: <span id="playCount">0</span></p>
+
     <div id="maze">
         <div id="player"></div>
         <div id="finish"></div>
     </div>
+
     <p id="status">Use the arrow keys to navigate the maze!</p>
-    
+
+    <!-- Modal for asking player name -->
+    <div id="nameInputModal" class="modal">
+        <div class="modal-content">
+            <h2>Enter Your Name</h2>
+            <input type="text" id="playerNameInput" placeholder="Your name">
+            <button id="startGameBtn">Start Game</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
